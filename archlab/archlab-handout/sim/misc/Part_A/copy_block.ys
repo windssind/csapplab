@@ -1,0 +1,42 @@
+# Execution begins at address 0    
+    .pos 0x0
+    irmovq stack,%rsp #set up stack pointer
+    call main
+    halt
+
+.align 8# Source block
+src:.quad 0x00a
+    .quad 0x0b0
+    .quad 0xc00
+# Destination block
+dest:
+    .quad 0x111
+    .quad 0x222
+    .quad 0x333
+# 函数的声明
+main:
+    irmovq src,%rdi
+    irmovq dest,%rsi
+    irmovq 3,%rdx
+    call copy_block
+    halt
+copy_block:
+    irmovq $0,%rax
+    jmp test
+
+Loop:
+    mrmovq (%rdi),%rbx # val=*src
+    irmovq $0x8,%rbp 
+    addq %rbp,%rdi ## src++
+    rmmovq %rbx,(%rsi) ## *dest=val
+    addq %rbp,%rsi ##dest ++
+    xorq %rbx,%rax ## result^=val
+    irmovq $1,%r10
+    subq %r10,%rdx ## len--
+test:
+    andq %rdx,%rdx
+    jne Loop
+    ret
+
+    .pos 0x400
+stack:
